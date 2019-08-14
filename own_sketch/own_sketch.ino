@@ -58,7 +58,7 @@ Module::Module(char a, char* b, int c, int d, int e, int f, int g, int h, int i,
     isPumping = j;
 }
 
-Module plantOne = Module('1', "Unknown", 0, 5, 40, 70, 12, 429, 0, false);
+Module plantOne = Module('1', "Unknown", 0, 5, 40, 70, 12, 449, 0, false);
 
 
 //#define MODULE_COUNT 7
@@ -132,7 +132,7 @@ void readSensors(){
 //        currentModule.currentPercentage = 
 
         Serial.print(",moisture_level=");
-        Serial.println(convertToPercent(analogRead(currentModule.readPin), currentModule));
+        Serial.println(currentModule.currentPercentage);
 
 //        Serial.println(currentModule.currentPercentage);
         
