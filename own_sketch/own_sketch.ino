@@ -19,15 +19,18 @@ uint8_t LED_ONE = 2;
 #include <ESP8266WiFi.h>
 const char* ssid = "(Don't mention the war)";
 const char* password = "56939862460419967485";
+WiFiClient espClient;
 
-// MQTT
+
+//MQTT
+PubSubClient client(espClient);
 const char *mqtt_server = "postman.cloudmqtt.com";
 #define mqtt_port 11968
 #define MQTT_USER "xxtdtmwf"
 #define MQTT_PASSWORD "c-0_VSx4qaOv"
 #define MQTT_SERIAL_PUBLISH_TEST "test"
 #define MQTT_SERIAL_PUBLISH_PLANTS "plants/berlin/oderstrasse/andrew"
-#define MQTT_SERIAL_PUBLISH_CPU "things/esp8266"
+#define MQTT_SERIAL_PUBLISH_CPU "things"
 #define MQTT_SERIAL_PUBLISH_PLACE "places/berlin/oderstrasse/andrew"
 
 const int BAUD = 115200;
@@ -90,12 +93,70 @@ void setup()
 {
     setupSerial();
     setupPins();
+    setupWifi();
+    client.setServer(mqtt_server, mqtt_port);
+    setupMqtt();
 }
 
 void loop()
 {
     readSensors();
     delay(LOOP_DELAY);
+}
+
+void setupMqtt()
+{
+    // Loop until we're reconnected
+    while (!client.connected()){
+
+        // Create a random client ID
+        String clientId;
+        clientId.reserve(30);
+        clientId = "ESP8266Client-oderstr01";
+
+        Serial.print("Attempting MQTT connection with details: ID");
+        Serial.print(clientId.c_str());
+        Serial.print(" and  username: ");
+        Serial.print(MQTT_USER);
+        Serial.print(" and password ");
+        Serial.println( MQTT_PASSWORD);
+
+        // Attempt to connect
+        if (client.connect(clientId.c_str(), MQTT_USER, MQTT_PASSWORD))
+        {
+            Serial.println("connected");
+
+            //Once connected, publish an announcement...
+            client.publish(MQTT_SERIAL_PUBLISH_TEST, "ESP8266 client");
+        }
+        else
+        {
+            Serial.print("failed, rc=");
+            Serial.print(client.state());
+            Serial.println(" try again in 5 seconds");
+        }
+    }
+ }
+
+
+void setupWifi()
+{
+
+    Serial.println(ssid);
+    /* Explicitly set the ESP8266 to be a WiFi-client */
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(ssid, password);
+
+    while (WiFi.status() != WL_CONNECTED)
+    {
+        delay(500);
+        Serial.print(".");
+    }
+
+    Serial.println("");
+    Serial.println("WiFi connected");
+    Serial.println("IP address: ");
+    Serial.println(WiFi.localIP());
 }
 
 void readSensors()
@@ -215,6 +276,9 @@ void readSensors()
     }
     delay(100);
     Serial.println(finalString);
+//    strcat(finalString, "\\");
+    client.publish(MQTT_SERIAL_PUBLISH_PLANTS, finalString);
+
     // EnMd of loop
     //    }
 
@@ -260,24 +324,4 @@ void setupSerial()
 {
     Serial.begin(115200);
     Serial.print("Connecting to ");
-}
-
-void setupWifi()
-{
-
-    Serial.println(ssid);
-    /* Explicitly set the ESP8266 to be a WiFi-client */
-    WiFi.mode(WIFI_STA);
-    WiFi.begin(ssid, password);
-
-    while (WiFi.status() != WL_CONNECTED)
-    {
-        delay(500);
-        Serial.print(".");
-    }
-
-    Serial.println("");
-    Serial.println("WiFi connected");
-    Serial.println("IP address: ");
-    Serial.println(WiFi.localIP());
 }
