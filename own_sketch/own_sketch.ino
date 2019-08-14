@@ -93,33 +93,33 @@ void readSensors(){
 //      Module currentModule = modules[i];
         Module currentModule = plantOne;
         // Project /
-//        Serial.print("<plant_system");
-//        //Tags /
-//        Serial.print(",city=Berlin");
-//        Serial.print(",location=oderstrasse");
-//        Serial.print(",room=andrews");
-//        Serial.print(",plant_type=");
-//        Serial.print(currentModule.plantType);
-//        Serial.print(",plant_id=");
-//        Serial.print(currentModule.id);
-//        
-//        Serial.print(" ");
-//
-//        //Fields
-//        Serial.print("servo_pin=");
-//        Serial.print(currentModule.servoPin);
-//
-//        Serial.print(",read_pin=");
-//        Serial.print(currentModule.readPin);
-//
+        Serial.print("<plant_system");
+        //Tags /
+        Serial.print(",city=Berlin");
+        Serial.print(",location=oderstrasse");
+        Serial.print(",room=andrews");
+        Serial.print(",plant_type=");
+        Serial.print(currentModule.plantType);
+        Serial.print(",plant_id=");
+        Serial.print(currentModule.id);
+        
+        Serial.print(" ");
+
+        //Fields
+        Serial.print("servo_pin=");
+        Serial.print(currentModule.servoPin);
+
+        Serial.print(",read_pin=");
+        Serial.print(currentModule.readPin);
+
         Serial.print(",sensor_reading=");
         Serial.print(analogRead(currentModule.readPin));
-//
-//        Serial.print(",moi_setting_high=");
-//        Serial.print(currentModule.moistureSettingHigh);
-//
-//        Serial.print(",moi_setting_low=");
-//        Serial.print(currentModule.moistureSettingLow);
+
+        Serial.print(",moi_setting_high=");
+        Serial.print(currentModule.moistureSettingHigh);
+
+        Serial.print(",moi_setting_low=");
+        Serial.print(currentModule.moistureSettingLow);
 
         Serial.print(",sensor_low_value=");
         Serial.print(currentModule.sensorLowerValue);
@@ -129,69 +129,67 @@ void readSensors(){
 
         
         currentModule.currentPercentage = convertToPercent(analogRead(currentModule.readPin),currentModule);
-//        currentModule.currentPercentage = 
 
         Serial.print(",moisture_level=");
-        Serial.println(currentModule.currentPercentage);
-
-//        Serial.println(currentModule.currentPercentage);
+        Serial.print(currentModule.currentPercentage);
         
-//        if (currentModule.currentPercentage < currentModule.moistureSettingLow)
-//        {
-//            currentModule.isPumping = true;
-//            needsPump = true;
-//            digitalWrite(currentModule.servoPin, LOW);
-//
-//            //Opening servo
-//            Serial.print(",dead_zone=0");
-//        }
-//        if (currentModule.currentPercentage >= currentModule.moistureSettingLow && currentModule.currentPercentage <= currentModule.moistureSettingHigh)
-//        {
-//            if (!currentModule.isPumping)
-//            {
-//                digitalWrite(currentModule.servoPin, HIGH);
-//            }
-//
-//            //the deadzone
-//            Serial.print(",dead_zone=1");
-//        }
-//        if (currentModule.currentPercentage > currentModule.moistureSettingHigh)
-//        {
-//            currentModule.isPumping = false;
-//            digitalWrite(currentModule.servoPin, HIGH);
-//
-//            //Opening servo
-//            Serial.print(",dead_zone=0");
-//        }
-//
-//        byte servoPinState = digitalRead(currentModule.servoPin);
-//        if (servoPinState == LOW)
-//        {
-//            Serial.print(",servo=1");
-//        }
-//        else
-//        {
-//            Serial.print(",servo=0");
-//        } 
-//
-//        byte pumpPinState = digitalRead(PUMP_PIN);
-//        
-//        if (pumpPinState == LOW)
-//        {
-//            Serial.println(",pump=0>");
-//        }
-//        else
-//        {
-//            Serial.println(",pump=1>");
-//        }
-//        delay(100);
+        if (currentModule.currentPercentage < currentModule.moistureSettingLow)
+        {
+            currentModule.isPumping = true;
+            needsPump = true;
+            digitalWrite(currentModule.servoPin, LOW);
+
+            //Opening servo
+            Serial.print(",dead_zone=0");
+        }
+        if (currentModule.currentPercentage >= currentModule.moistureSettingLow && currentModule.currentPercentage <= currentModule.moistureSettingHigh)
+        {
+            if (!currentModule.isPumping)
+            {
+                digitalWrite(currentModule.servoPin, HIGH);
+            }
+
+           //the deadzone
+            Serial.print(",dead_zone=1");
+        }
+        if (currentModule.currentPercentage > currentModule.moistureSettingHigh)
+        {
+            currentModule.isPumping = false;
+            digitalWrite(currentModule.servoPin, HIGH);
+
+            //Opening servo
+            Serial.print(",dead_zone=0");
+        }
+
+        byte servoPinState = digitalRead(currentModule.servoPin);
+        if (servoPinState == LOW)
+        {
+            Serial.print(",servo=1");
+        }
+        else
+        {
+            Serial.print(",servo=0");
+        } 
+
+        byte pumpPinState = digitalRead(PUMP_PIN);
+        
+        if (pumpPinState == LOW)
+        {
+            Serial.println(",pump=0>");
+        }
+        else
+        {
+            Serial.println(",pump=1>");
+        }
+        delay(100);
+    // EnMd of loop
 //    }
-//
-//    if (needsPump)
-//    {
-//        digitalWrite(PUMP_PIN, HIGH);
-//        delay(loopDelayPumpmilli);
-//    }
+
+    if (needsPump)
+    {
+        digitalWrite(PUMP_PIN, HIGH);
+        delay(loopDelayPumpmilli);
+    }
 //    else
 //    {
 //        digitalWrite(PUMP_PIN, LOW);
