@@ -16,19 +16,22 @@ const char* password = STAPSK;
 const char* host = "djxmmx.net";
 const uint16_t port = 17;
 
+
 const int BAUD = 115200;
 const int LOOP_DELAY = 2000;
-const int PUMP_PIN = 15;
+const int PUMP_PIN = 5;
 
 // Time in milliseconds
 const unsigned long  loopDelayNormalSecs = 600;
 //const unsigned long  loopDelayNormalSecs = 6;
 const int loopDelayPumpmilli = 100;
 
+int initialised = 0;
+
 
 class Module
 {
-public:
+  public:
     Module( char, char*, int, int, int, int, int, int, int, bool);
     char id;
     char* plantType;
@@ -46,16 +49,16 @@ public:
 /// Constructor for each module
 Module::Module(char a, char* b, int c, int d, int e, int f, int g, int h, int i, bool j )
 {
-    id = a;
-    plantType = b;
-    readPin = c;
-    servoPin = d;
-    moistureSettingLow = e;
-    moistureSettingHigh = f;
-    sensorLowerValue = g;
-    sensorUpperValue = h;
-    currentPercentage = i;
-    isPumping = j;
+  id = a;
+  plantType = b;
+  readPin = c;
+  servoPin = d;
+  moistureSettingLow = e;
+  moistureSettingHigh = f;
+  sensorLowerValue = g;
+  sensorUpperValue = h;
+  currentPercentage = i;
+  isPumping = j;
 }
 
 Module plantOne = Module('1', "Unknown", 0, 5, 40, 70, 12, 449, 0, false);
@@ -74,142 +77,146 @@ Module plantOne = Module('1', "Unknown", 0, 5, 40, 70, 12, 449, 0, false);
 //};
 
 
-void setup(){
+void setup() {
   setupSerial();
   setupPins();
+}
+
+void loop() {
+  readSensors();
+  delay(LOOP_DELAY);
+}
+
+void readSensors() {
+
+  bool needsPump = false;
+
+  //    for (int i = 0; i < MODULE_COUNT; i++)
+  //    {
+  //      Module currentModule = modules[i];
+  Module currentModule = plantOne;
+  // Project /
+  Serial.print("<plant_system");
+  //Tags /
+  Serial.print(",city=Berlin");
+  Serial.print(",location=oderstrasse");
+  Serial.print(",room=andrews");
+  Serial.print(",plant_type=");
+  Serial.print(currentModule.plantType);
+  Serial.print(",plant_id=");
+  Serial.print(currentModule.id);
+
+  Serial.print(" ");
+
+  //Fields
+  Serial.print("servo_pin=");
+  Serial.print(currentModule.servoPin);
+
+  Serial.print(",read_pin=");
+  Serial.print(currentModule.readPin);
+
+  Serial.print(",sensor_reading=");
+  Serial.print(analogRead(currentModule.readPin));
+
+  Serial.print(",moi_setting_high=");
+  Serial.print(currentModule.moistureSettingHigh);
+
+  Serial.print(",moi_setting_low=");
+  Serial.print(currentModule.moistureSettingLow);
+
+  Serial.print(",sensor_low_value=");
+  Serial.print(currentModule.sensorLowerValue);
+
+  Serial.print(",sensor_high_value=");
+  Serial.print(currentModule.sensorUpperValue);
+
+
+  currentModule.currentPercentage = convertToPercent(analogRead(currentModule.readPin), currentModule);
+
+  Serial.print(",moisture_level=");
+  Serial.print(currentModule.currentPercentage);
+
+  if (currentModule.currentPercentage < currentModule.moistureSettingLow)
+  {
+    currentModule.isPumping = true;
+    needsPump = true;
+    digitalWrite(currentModule.servoPin, LOW);
+
+    //Opening servo
+    Serial.print(",dead_zone=0");
+  }
+  if (currentModule.currentPercentage >= currentModule.moistureSettingLow && currentModule.currentPercentage <= currentModule.moistureSettingHigh)
+  {
+    if (!currentModule.isPumping)
+    {
+      digitalWrite(currentModule.servoPin, HIGH);
+    }
+
+    //the deadzone
+    Serial.print(",dead_zone=1");
+  }
+  if (currentModule.currentPercentage > currentModule.moistureSettingHigh)
+  {
+    currentModule.isPumping = false;
+    digitalWrite(currentModule.servoPin, HIGH);
+
+    //Opening servo
+    Serial.print(",dead_zone=0");
   }
 
-void loop(){
-    readSensors();
-    delay(LOOP_DELAY);
+  byte servoPinState = digitalRead(currentModule.servoPin);
+  if (servoPinState == LOW)
+  {
+    Serial.print(",servo=1");
+  }
+  else
+  {
+    Serial.print(",servo=0");
   }
 
-void readSensors(){
+  byte pumpPinState = digitalRead(PUMP_PIN);
 
-    bool needsPump = false;
+  if (pumpPinState == LOW)
+  {
+    Serial.println(",pump=0>");
+  }
+  else
+  {
+    Serial.println(",pump=1>");
+  }
+  delay(100);
+  // EnMd of loop
+  //    }
 
-//    for (int i = 0; i < MODULE_COUNT; i++)
-//    {
-//      Module currentModule = modules[i];
-        Module currentModule = plantOne;
-        // Project /
-        Serial.print("<plant_system");
-        //Tags /
-        Serial.print(",city=Berlin");
-        Serial.print(",location=oderstrasse");
-        Serial.print(",room=andrews");
-        Serial.print(",plant_type=");
-        Serial.print(currentModule.plantType);
-        Serial.print(",plant_id=");
-        Serial.print(currentModule.id);
-        
-        Serial.print(" ");
-
-        //Fields
-        Serial.print("servo_pin=");
-        Serial.print(currentModule.servoPin);
-
-        Serial.print(",read_pin=");
-        Serial.print(currentModule.readPin);
-
-        Serial.print(",sensor_reading=");
-        Serial.print(analogRead(currentModule.readPin));
-
-        Serial.print(",moi_setting_high=");
-        Serial.print(currentModule.moistureSettingHigh);
-
-        Serial.print(",moi_setting_low=");
-        Serial.print(currentModule.moistureSettingLow);
-
-        Serial.print(",sensor_low_value=");
-        Serial.print(currentModule.sensorLowerValue);
-
-        Serial.print(",sensor_high_value=");
-        Serial.print(currentModule.sensorUpperValue);
-
-        
-        currentModule.currentPercentage = convertToPercent(analogRead(currentModule.readPin),currentModule);
-
-        Serial.print(",moisture_level=");
-        Serial.print(currentModule.currentPercentage);
-        
-        if (currentModule.currentPercentage < currentModule.moistureSettingLow)
-        {
-            currentModule.isPumping = true;
-            needsPump = true;
-            digitalWrite(currentModule.servoPin, LOW);
-
-            //Opening servo
-            Serial.print(",dead_zone=0");
-        }
-        if (currentModule.currentPercentage >= currentModule.moistureSettingLow && currentModule.currentPercentage <= currentModule.moistureSettingHigh)
-        {
-            if (!currentModule.isPumping)
-            {
-                digitalWrite(currentModule.servoPin, HIGH);
-            }
-
-           //the deadzone
-            Serial.print(",dead_zone=1");
-        }
-        if (currentModule.currentPercentage > currentModule.moistureSettingHigh)
-        {
-            currentModule.isPumping = false;
-            digitalWrite(currentModule.servoPin, HIGH);
-
-            //Opening servo
-            Serial.print(",dead_zone=0");
-        }
-
-        byte servoPinState = digitalRead(currentModule.servoPin);
-        if (servoPinState == LOW)
-        {
-            Serial.print(",servo=1");
-        }
-        else
-        {
-            Serial.print(",servo=0");
-        } 
-
-        byte pumpPinState = digitalRead(PUMP_PIN);
-        
-        if (pumpPinState == LOW)
-        {
-            Serial.println(",pump=0>");
-        }
-        else
-        {
-            Serial.println(",pump=1>");
-        }
-        delay(100);
-    // EnMd of loop
-//    }
+  if (initialised >= 5) {
 
     if (needsPump)
     {
-        digitalWrite(PUMP_PIN, HIGH);
-        delay(loopDelayPumpmilli);
+      digitalWrite(PUMP_PIN, HIGH);
+      delay(loopDelayPumpmilli);
     }
-//    else
-//    {
-//        digitalWrite(PUMP_PIN, LOW);
-//        int p = 0;
-//        while (p < loopDelayNormalSecs) {
-//        delay(1000);
-//        p++;
-//      }
-//
-//    }
-}
+    else
+    {
+      digitalWrite(PUMP_PIN, LOW);
+      int p = 0;
+      while (p < loopDelayNormalSecs) {
+        delay(1000);
+        p++;
+      }
+    }
 
+  } else {
+    initialised ++;
+  }
+}
 
 int convertToPercent(int sensorValue, Module module)
 {
-    int percentValue = map(sensorValue, module.sensorLowerValue, module.sensorUpperValue, 0, 100);
-    return percentValue;
+  int percentValue = map(sensorValue, module.sensorLowerValue, module.sensorUpperValue, 0, 100);
+  return percentValue;
 }
-  
-void setupPins(){
+
+void setupPins() {
   pinMode(plantOne.readPin, INPUT);
   pinMode(plantOne.servoPin, OUTPUT);
   pinMode(PUMP_PIN, OUTPUT);
@@ -220,8 +227,8 @@ void setupSerial() {
   Serial.print("Connecting to ");
 }
 
-void setupWifi(){
-   
+void setupWifi() {
+
   Serial.println(ssid);
   /* Explicitly set the ESP8266 to be a WiFi-client */
   WiFi.mode(WIFI_STA);
@@ -236,9 +243,9 @@ void setupWifi(){
   Serial.println("WiFi connected");
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
-  }
+}
 
-  
+
 void wifiloop() {
   Serial.print("connecting to ");
   Serial.print(host);
