@@ -34,7 +34,7 @@ const char *mqtt_server = "postman.cloudmqtt.com";
 #define MQTT_SERIAL_PUBLISH_PLACE "places/berlin/oderstrasse/andrew"
 
 const int BAUD = 115200;
-const int LOOP_DELAY = 2000;
+const int LOOP_DELAY = 2000000;
 const int PUMP_PIN = 5;
 
 // Time in milliseconds
@@ -276,7 +276,6 @@ void readSensors()
     }
     delay(100);
     Serial.println(finalString);
-//    strcat(finalString, "\\");
     client.publish(MQTT_SERIAL_PUBLISH_PLANTS, finalString);
 
     // EnMd of loop

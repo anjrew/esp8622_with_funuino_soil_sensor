@@ -75,7 +75,7 @@ Module::Module(char a, char *b, int c, int d, int e, int f, int g, int h, int i,
     isPumping = j;
 }
 
-Module plantOne = Module('1', "Unknown", 0, 5, 40, 70, 12, 449, 0, false);
+Module plantOne = Module('1', "Unknown", 0, 5, 40, 70, 12, 560.75, 0, false);
 
 //#define MODULE_COUNT 7
 //Module modules[MODULE_COUNT] = { 
@@ -96,6 +96,28 @@ void setup()
     setupWifi();
     client.setServer(mqtt_server, mqtt_port);
     setupMqtt(); 
+    logChipDetails();
+}
+
+void logChipDetails() {
+ 
+  Serial.begin(115200);
+  Serial.println();
+ 
+  Serial.print("Chip ID: ");
+  Serial.println(ESP.getFlashChipId());
+ 
+  Serial.print("Chip Real Size: ");
+  Serial.println(ESP.getFlashChipRealSize());
+ 
+  Serial.print("Chip Size: ");
+  Serial.println(ESP.getFlashChipSize());
+ 
+  Serial.print("Chip Speed: ");
+  Serial.println(ESP.getFlashChipSpeed());
+ 
+  Serial.print("Chip Mode: ");
+  Serial.println(ESP.getFlashChipMode());
 }
 
 void loop()
@@ -258,26 +280,26 @@ void readSensors()
         strcat(finalString, ",dead_zone=0");
     }
 
-    byte servoPinState = digitalRead(currentModule.servoPin);
-    if (servoPinState == LOW)
-    {
-        strcat(finalString, ",servo=1");
-    }
-    else
-    {
-        strcat(finalString, ",servo=0");
-    }
-
-    byte pumpPinState = digitalRead(PUMP_PIN);
-
-    if (pumpPinState == LOW)
-    {
-        strcat(finalString, ",pump=0");
-    }
-    else
-    {
-        strcat(finalString, ",pump=1");
-    }
+//    byte servoPinState = digitalRead(currentModule.servoPin);
+//    if (servoPinState == LOW)
+//    {
+//        strcat(finalString, ",servo=1");
+//    }
+//    else
+//    {
+//        strcat(finalString, ",servo=0");
+//    }
+//
+//    byte pumpPinState = digitalRead(PUMP_PIN);
+//
+//    if (pumpPinState == LOW)
+//    {
+//        strcat(finalString, ",pump=0");
+//    }
+//    else
+//    {
+//        strcat(finalString, ",pump=1");
+//    }
     delay(100);
     Serial.println(finalString);
     client.publish(MQTT_SERIAL_PUBLISH_PLANTS, finalString);
