@@ -34,7 +34,7 @@ const char *mqtt_server = "postman.cloudmqtt.com";
 #define CLIENT_ID "ESP8266Client-oderstr02"
 
 const int BAUD = 115200;
-const int LOOP_DELAY = 30000;
+const int SECONDS_LOOP_DELAY = 60 * 10;
 const int PUMP_PIN = 5;
 
 // Time in milliseconds
@@ -97,33 +97,32 @@ void setup()
     client.setServer(mqtt_server, mqtt_port);
     setupMqtt(); 
     logChipDetails();
+    
 }
 
 void logChipDetails() {
- 
-  Serial.begin(115200);
-  Serial.println();
- 
-  Serial.print("Chip ID: ");
+Serial.print("Chip Id ");
+  Serial.println(ESP.getChipId());
+  Serial.print("Flash Chip Id ");
   Serial.println(ESP.getFlashChipId());
- 
-  Serial.print("Chip Real Size: ");
-  Serial.println(ESP.getFlashChipRealSize());
- 
-  Serial.print("Chip Size: ");
+  Serial.print("Flash Chip Size ");
   Serial.println(ESP.getFlashChipSize());
- 
-  Serial.print("Chip Speed: ");
+  Serial.print("Flash Chip Speed ");
   Serial.println(ESP.getFlashChipSpeed());
- 
-  Serial.print("Chip Mode: ");
-  Serial.println(ESP.getFlashChipMode());
+  Serial.print("Cycle COunt ");
+  Serial.println(ESP.getCycleCount() );
+  Serial.print("Module Vcc ");
+  Serial.println(ESP.getVcc());
 }
 
 void loop()
 {
     readSensors();
-    delay(LOOP_DELAY);
+
+     int loops = 0;
+    while (loops < SECONDS_LOOP_DELAY){
+      delay(SECONDS_LOOP_DELAY);
+    }
 }
 
 void setupMqtt()

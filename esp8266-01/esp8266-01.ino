@@ -34,7 +34,7 @@ const char *mqtt_server = "postman.cloudmqtt.com";
 #define MQTT_SERIAL_PUBLISH_PLACE "places/berlin/oderstrasse/andrew"
 
 const int BAUD = 115200;
-const int LOOP_DELAY = 2000000;
+const int SECONDS_LOOP_DELAY = 60 * 10;
 const int PUMP_PIN = 5;
 
 // Time in milliseconds
@@ -75,18 +75,18 @@ Module::Module(char a, char *b, int c, int d, int e, int f, int g, int h, int i,
     isPumping = j;
 }
 
-Module plantOne = Module('1', "Unknown", 0, 5, 40, 70, 12, 449, 0, false);
+Module plantOne = Module('1', "Unknown", 0, 5, 40, 70, 12, 622, 0, false);
 
 //#define MODULE_COUNT 7
 //Module modules[MODULE_COUNT] = {
-//      Module('1', "Unknown", 0, 0, 40, 70, 12, 595, 0, false)
-//
-////    Module(A1, 0, '2', 70, 3, 640, 323, 40, false, "scindapsus"),    /// Checked sensor values 2/6/2019 Plant two - Hanging plant
-////    Module(A2, 0, '3', 70, 4, 622, 312, 40, false, "scindapsus"),
-////    Module(A3, 0, '4', 90, 5, 664, 339, 60, false, "tray"),    // Big plant bed
-////    Module(A4, 0, '5', 70, 6, 672, 308, 40, false, "bonsai"),     // Checked sensor values 8/5/2019 bonsai
-////    Module(A5, 0, '6', 60, 7, 700, 372, 30, false, "cactus"),     // Checked sensor values 2/6/2019 Cactus
-////    Module(A6, 0, '7', 70, 8, 597, 287, 40, false, "peace_lily"), // Checked sensor values 8/5/2019 Peace Lily
+//    plantOne
+
+//    Module(A1, 0, '2', 70, 3, 640, 323, 40, false, "scindapsus"),    /// Checked sensor values 2/6/2019 Plant two - Hanging plant
+//    Module(A2, 0, '3', 70, 4, 622, 312, 40, false, "scindapsus"),
+//    Module(A3, 0, '4', 90, 5, 664, 339, 60, false, "tray"),    // Big plant bed
+//    Module(A4, 0, '5', 70, 6, 672, 308, 40, false, "bonsai"),     // Checked sensor values 8/5/2019 bonsai
+//    Module(A5, 0, '6', 60, 7, 700, 372, 30, false, "cactus"),     // Checked sensor values 2/6/2019 Cactus
+//    Module(A6, 0, '7', 70, 8, 597, 287, 40, false, "peace_lily"), // Checked sensor values 8/5/2019 Peace Lily
 //};
 
 void setup()
@@ -96,13 +96,33 @@ void setup()
     setupWifi();
     client.setServer(mqtt_server, mqtt_port);
     setupMqtt();
+    printSystemStats();
 }
 
 void loop()
 {
     readSensors();
-    delay(LOOP_DELAY);
+
+    int loops = 0;
+    while (loops < SECONDS_LOOP_DELAY){
+      delay(SECONDS_LOOP_DELAY);
+    }
 }
+
+void printSystemStats(){
+  Serial.print("Chip Id ");
+  Serial.println(ESP.getChipId());
+  Serial.print("Flash Chip Id ");
+  Serial.println(ESP.getFlashChipId());
+  Serial.print("Flash Chip Size ");
+  Serial.println(ESP.getFlashChipSize());
+  Serial.print("Flash Chip Speed ");
+  Serial.println(ESP.getFlashChipSpeed());
+  Serial.print("Cycle Count ");
+  Serial.println(ESP.getCycleCount() );
+  Serial.print("Module Vcc ");
+  Serial.println(ESP.getVcc());
+  }
 
 void setupMqtt()
 {
