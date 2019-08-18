@@ -1,6 +1,5 @@
 /*
-    This sketch establishes a TCP connection to a "quote of the day" service.
-    It sends a "hello" message, and then prints received data.
+    FOR EACH SKETCK SETUP THE PLANTS AND THE DETAILS FOR THE MQTT
 */
 
 #include <ESP8266WiFi.h>
@@ -33,13 +32,14 @@ const char *mqtt_server = "postman.cloudmqtt.com";
 #define MQTT_SERIAL_PUBLISH_CPU "things"
 #define MQTT_SERIAL_PUBLISH_PLACE "places/berlin/oderstrasse/andrew"
 
+#define CLIENT_ID "ESP8266Client-oderstr03"
+
 const int BAUD = 115200;
-const int SECONDS_LOOP_DELAY = 60 * 10;
 const int PUMP_PIN = 5;
 
 // Time in milliseconds
-//const unsigned long loopDelayNormalSecs = 600;
-const unsigned long  loopDelayNormalSecs = 6;
+//const int SECONDS_LOOP_DELAY = 60 * 10;
+const int SECONDS_LOOP_DELAY = 2;
 const int loopDelayPumpmilli = 100;
 
 int initialised = 0;
@@ -78,7 +78,7 @@ Module::Module(char a, char *b, int c, int d, int e, int f, int g, int h, int i,
 #define MODULE_COUNT 1
 Module modules[MODULE_COUNT] = {
   // .   ID .  TYPE .   RD.SEV.MH. ML  SL .SH  %  PUMP
-  Module('1', "Unknown", 0, 5, 40, 70, 12, 675, 0, false),
+  Module('1', "Unknown", 0, 5, 40, 70, 859, 456, 0, false)
 };
 
 void setup()
@@ -90,37 +90,12 @@ void setup()
     client.setServer(mqtt_server, mqtt_port);
     delay(1000);
     setupMqtt(); 
+    logChipDetails();
     Serial.println("The setup is complete");
     delay(1000);
 }
 
-void loop()
-{
-    readSensors();
-
-    int loops = 0;
-    while (loops < SECONDS_LOOP_DELAY){
-      delay(1000);
-    }
-}
-
-void setupPins(){
-  
-  for (int i = 0; i < (MODULE_COUNT); i++)
-  {
-    Serial.print("Pin ");
-    Serial.print(modules[i].servoPin);
-    pinMode(i, OUTPUT);
-    Serial.print(" is set to OUTPUT\n");
-    digitalWrite(i, HIGH);
-    delay(100);
-    modules[i].isPumping = false;
-  }
-//  pinMode(pumpPin, OUTPUT);
-//  digitalWrite(pumpPin, LOW);
-  }
-
-void printSystemStats(){
+void logChipDetails() {
   Serial.print("Chip Id ");
   Serial.println(ESP.getChipId());
   Serial.print("Flash Chip Id ");
@@ -129,36 +104,47 @@ void printSystemStats(){
   Serial.println(ESP.getFlashChipSize());
   Serial.print("Flash Chip Speed ");
   Serial.println(ESP.getFlashChipSpeed());
-  Serial.print("Cycle Count ");
+  Serial.print("Cycle COunt ");
   Serial.println(ESP.getCycleCount() );
   Serial.print("Module Vcc ");
   Serial.println(ESP.getVcc());
-  }
+}
+
+void loop()
+{   
+    Serial.println("Looping");
+    readSensors();
+    Serial.print(analogRead(0));
+
+    int loops = 0;
+
+    while (loops < SECONDS_LOOP_DELAY){
+      loops++;
+      delay(1000);
+    }
+}
 
 void setupMqtt()
 {
+    Serial.print("Keep alive time is: ");
+    Serial.println(MQTT_KEEPALIVE);
     // Loop until we're reconnected
     while (!client.connected()){
 
-        // Create a random client ID
-        String clientId;
-        clientId.reserve(30);
-        clientId = "ESP8266Client-oderstr01";
-
         Serial.print("Attempting MQTT connection with details: ID");
-        Serial.print(clientId.c_str());
+        Serial.print(CLIENT_ID);
         Serial.print(" and  username: ");
         Serial.print(MQTT_USER);
         Serial.print(" and password ");
         Serial.println( MQTT_PASSWORD);
 
         // Attempt to connect
-        if (client.connect(clientId.c_str(), MQTT_USER, MQTT_PASSWORD))
+        if (client.connect(CLIENT_ID, MQTT_USER, MQTT_PASSWORD))
         {
             Serial.println("connected");
 
             //Once connected, publish an announcement...
-            client.publish(MQTT_SERIAL_PUBLISH_TEST, "ESP8266 client");
+            client.publish(MQTT_SERIAL_PUBLISH_TEST, CLIENT_ID);
         }
         else
         {
@@ -197,12 +183,18 @@ void readSensors()
 
     bool needsPump = false;
 
-        for (int i = 0; i < MODULE_COUNT; i++)
-        {
-          Module currentModule = modules[i];
+//        for (int i = 0; i < MODULE_COUNT; i++)
+//       {
+         Module currentModule = modules[0];
 
-    strcpy(finalString, "plant_system,city=Berlin,city=Berlin,room=andrews,thing=esp8266,plant_type=");
-  
+    strcat(finalString, ",city=berlin,location=oderstrasse,room=andrews cpu_temp_c=");
+
+    strcpy(finalString, "plant_system,city=Berlin,city=Berlin,room=andrews,thing=");
+
+    strcat(finalString, CLIENT_ID);
+
+    strcat(finalString, ",plant_type=");
+
     strcat(finalString, currentModule.plantType);
 
     strcat(finalString, ",plant_id=");
@@ -284,32 +276,32 @@ void readSensors()
         strcat(finalString, ",dead_zone=0");
     }
 
-    byte servoPinState = digitalRead(currentModule.servoPin);
-    if (servoPinState == LOW)
-    {
-        strcat(finalString, ",servo=1");
-    }
-    else
-    {
-        strcat(finalString, ",servo=0");
-    }
-
-    byte pumpPinState = digitalRead(PUMP_PIN);
-
-    if (pumpPinState == LOW)
-    {
-        strcat(finalString, ",pump=0");
-    }
-    else
-    {
-        strcat(finalString, ",pump=1");
-    }
+//    byte servoPinState = digitalRead(currentModule.servoPin);
+//    if (servoPinState == LOW)
+//    {
+//        strcat(finalString, ",servo=1");
+//    }
+//    else
+//    {
+//        strcat(finalString, ",servo=0");
+//    }
+//
+//    byte pumpPinState = digitalRead(PUMP_PIN);
+//
+//    if (pumpPinState == LOW)
+//    {
+//        strcat(finalString, ",pump=0");
+//    }
+//    else
+//    {
+//        strcat(finalString, ",pump=1");
+//    }
     delay(100);
     Serial.println(finalString);
     client.publish(MQTT_SERIAL_PUBLISH_PLANTS, finalString);
 
-    // End of loop of modules
-    }
+    // End of loop
+//        }
 
 //    if (initialised >= 5)
 //    {
@@ -341,6 +333,22 @@ int convertToPercent(int sensorValue, Module module)
     int percentValue = map(sensorValue, module.sensorLowerValue, module.sensorUpperValue, 0, 100);
     return percentValue;
 }
+
+void setupPins(){
+  
+  for (int i = 0; i < (MODULE_COUNT); i++)
+  {
+    Serial.print("Pin ");
+    Serial.print(modules[i].servoPin);
+    pinMode(i, OUTPUT);
+    Serial.print(" is set to OUTPUT\n");
+    digitalWrite(i, HIGH);
+    delay(100);
+    modules[i].isPumping = false;
+  }
+//  pinMode(pumpPin, OUTPUT);
+//  digitalWrite(pumpPin, LOW);
+  }
 
 
 

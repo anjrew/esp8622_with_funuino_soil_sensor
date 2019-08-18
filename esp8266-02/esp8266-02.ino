@@ -94,10 +94,12 @@ void setup()
     setupSerial();
     setupPins();
     setupWifi();
+    delay(1000);
     client.setServer(mqtt_server, mqtt_port);
     setupMqtt(); 
     logChipDetails();
-    
+    Serial.println("The setup is complete");
+    delay(1000);
 }
 
 void logChipDetails() {
